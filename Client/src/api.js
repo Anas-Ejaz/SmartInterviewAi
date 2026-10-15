@@ -1,4 +1,4 @@
-const API = import.meta.env.VITE_API_URL || "http://127.0.0.1:8000" || "http://smart-interview-ai-backend.vercel.app";
+const API = import.meta.env.VITE_API_URL || "http://127.0.0.1:8000" || "https://smart-interview-ai-backend.vercel.app/";
 const TIMEOUT_MS = 90000;
 
 export async function api(path, body) {
