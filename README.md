@@ -83,4 +83,4 @@ npm run dev
 - **Team Members:** Ibrahim Wasim, Muhammad Anas, Shaaf Raheel .
 - **Contributions:** System architecture design, FastAPI backend orchestration, Groq & `gpt-oss-120` integration, React frontend development, and voice workflow implementation.
 - **License:** MIT Open-Source License.
-- **Acknowledgements:** Built using Groq, Google Gen AI, FastAPI, React, and Tailwind CSS ecosystems.
+- **Acknowledgements:** Built using Groq, FastAPI, React, and Tailwind CSS ecosystems.
