@@ -140,7 +140,7 @@ function Room({ session, onDone }) {
     try { onDone(await api(`${base}/complete`, {})); }
     catch (e) { setError(e.message); setBusy(false); }
   }
-  function next() { setQ(fb.next); setFb(null); setAnswer(""); }
+  function next() { if (!fb || !fb.next) return; setQ(fb.next); setFb(null); setAnswer(""); } // FIX 1
 
   return (
     <>
@@ -158,11 +158,11 @@ function Room({ session, onDone }) {
         <div className="card fb">
           <h3>Feedback · {fb.score}/100</h3>
           <p>{fb.feedback}</p>
-          {fb.strengths.length > 0 && <><strong>Strong</strong><ul>{fb.strengths.map((s, i) => <li key={i}>{s}</li>)}</ul></>}
-          {fb.improvements.length > 0 && <><strong>Improve</strong><ul>{fb.improvements.map((s, i) => <li key={i}>{s}</li>)}</ul></>}
+          {fb.strengths?.length > 0 && <><strong>Strong</strong><ul>{fb.strengths.map((s, i) => <li key={i}>{s}</li>)}</ul></>}{/* FIX 2 */}
+          {fb.improvements?.length > 0 && <><strong>Improve</strong><ul>{fb.improvements.map((s, i) => <li key={i}>{s}</li>)}</ul></>}{/* FIX 2 */}
           {fb.finished
             ? <button className="btn" disabled={busy} onClick={finish}>{busy ? <Spinner text="Writing your report…" /> : "See my report"}</button>
-            : <button className="btn" onClick={next}>{fb.next.is_follow_up ? "Answer follow-up" : "Next question"}</button>}
+            : <button className="btn" disabled={!fb.next} onClick={next}>{fb.next?.is_follow_up ? "Answer follow-up" : "Next question"}</button>}{/* FIX 3 */}
         </div>
       )}
     </>
