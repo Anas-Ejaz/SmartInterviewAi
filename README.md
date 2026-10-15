@@ -23,7 +23,7 @@ An AI-powered technical and behavioral interview practice platform built for sof
 
 | Attribute | Specification |
 | :--- | :--- |
-| **Exact Model Names** | `gpt-oss-120` (Groq-hosted open-weights model) & **Google Gemini API** |
+| **Exact Model Names** | `gpt-oss-120` (Groq-hosted open-weights model)  |
 | **Parameter Size / Architecture** | Open-weights transformer-based language models optimized for ultra-high-speed inference. |
 | **Runtime / API Provider** | **Groq API** (delivering ultra-low latency token inference) & **Google Gen AI SDK**. |
 | **What the Models Do** | The models process candidate answers, evaluate technical correctness, identify knowledge gaps, determine follow-up questions, and generate comprehensive final performance reports. |
