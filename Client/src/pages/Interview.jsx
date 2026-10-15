@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { api } from "../api";
 import Nav from "../components/Nav";
+import "../interview.css";
 
 const ROLES = ["Frontend Developer", "Backend Developer", "Full Stack Developer", "Python Developer"];
 const LEVELS = ["Intern", "Junior", "Mid-level"];
@@ -13,39 +14,97 @@ const DIM_LABELS = {
 const Spinner = ({ text }) => <><span className="spin" aria-hidden />{text}</>;
 const Err = ({ msg }) => (msg ? <div className="err" role="alert">{msg}</div> : null);
 
+const MAX_SKILLS = 20;
+// Split on commas, trim, drop empties/duplicates (case-insensitive) and cap the total.
+function mergeSkills(list, raw) {
+  const out = [...list];
+  for (const part of raw.split(",")) {
+    const s = part.trim().slice(0, 40);
+    if (s && out.length < MAX_SKILLS && !out.some((x) => x.toLowerCase() === s.toLowerCase())) out.push(s);
+  }
+  return out;
+}
+
+const LOADING_STEPS = [
+  "Reading your role and skills…",
+  "Looking at your project details…",
+  "Writing your interview questions…",
+  "Almost ready…",
+];
+
+function QuestionsLoader() {
+  const [i, setI] = useState(0);
+  useEffect(() => {
+    const t = setInterval(() => setI((n) => Math.min(n + 1, LOADING_STEPS.length - 1)), 3500);
+    return () => clearInterval(t);
+  }, []);
+  return (
+    <div className="card loader" role="status" aria-live="polite">
+      <div className="orb" aria-hidden />
+      <h2>Preparing your interview</h2>
+      <p className="note">{LOADING_STEPS[i]}</p>
+      <div className="bar indet" aria-hidden><i /></div>
+      <span className="note">This can take a little while. Please keep this tab open.</span>
+    </div>
+  );
+}
+
 function Setup({ onCreated }) {
-  const [f, setF] = useState({ role: ROLES[2], level: LEVELS[1], skills: ["React", "JavaScript"], count: 5, github: "", project: "" });
+  const [f, setF] = useState({ role: "", level: LEVELS[1], skills: [], count: 5, github: "", project: "" });
+  const [skillInput, setSkillInput] = useState("");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
   const set = (k, v) => setF((p) => ({ ...p, [k]: v }));
-  const toggle = (s) => set("skills", f.skills.includes(s) ? f.skills.filter((x) => x !== s) : [...f.skills, s]);
+  const addSkills = (raw) => { set("skills", mergeSkills(f.skills, raw)); setSkillInput(""); };
+  const removeSkill = (s) => set("skills", f.skills.filter((x) => x !== s));
+  function onSkillKey(e) {
+    if (e.key === "Enter" || e.key === ",") { e.preventDefault(); addSkills(skillInput); }
+    else if (e.key === "Backspace" && !skillInput && f.skills.length) removeSkill(f.skills[f.skills.length - 1]);
+  }
 
   async function submit() {
-    if (!f.skills.length) return setError("Pick at least one skill.");
+    const role = f.role.trim();
+    const skills = mergeSkills(f.skills, skillInput); // include anything typed but not yet added
+    if (!role) return setError("Enter your target role.");
+    if (!skills.length) return setError("Add at least one skill.");
     setBusy(true); setError("");
     try {
       const data = await api("/interviews", {
-        role: f.role, level: f.level, skills: f.skills, question_count: Number(f.count),
+        role, level: f.level, skills, question_count: Number(f.count),
         project_description: f.project, github_url: f.github.trim() || null,
       });
+      if (!data || !data.session_id || typeof data.question !== "string") {
+        throw new Error("The backend replied, but not with an interview. Check the backend terminal for errors.");
+      }
       onCreated(data);
     } catch (e) { setError(e.message); setBusy(false); }
   }
+
+  if (busy) return <QuestionsLoader />;
 
   return (
     <div className="card">
       <h2>Set up your interview</h2>
       <div className="grid">
         <div><label htmlFor="role">Target role</label>
-          <select id="role" value={f.role} onChange={(e) => set("role", e.target.value)}>{ROLES.map((r) => <option key={r}>{r}</option>)}</select></div>
+          <input id="role" list="role-list" maxLength={80} placeholder="e.g. Frontend Developer, DevOps Engineer" value={f.role} onChange={(e) => set("role", e.target.value)} />
+          <datalist id="role-list">{ROLES.map((r) => <option key={r} value={r} />)}</datalist></div>
         <div><label htmlFor="lvl">Experience level</label>
           <select id="lvl" value={f.level} onChange={(e) => set("level", e.target.value)}>{LEVELS.map((r) => <option key={r}>{r}</option>)}</select></div>
         <div><label htmlFor="cnt">Questions</label>
           <select id="cnt" value={f.count} onChange={(e) => set("count", e.target.value)}>{[3, 5, 7, 10].map((n) => <option key={n}>{n}</option>)}</select></div>
       </div>
-      <label>Skills</label>
-      <div className="chips">{SKILLS.map((s) => (
-        <button type="button" key={s} className={"chip" + (f.skills.includes(s) ? " on" : "")} aria-pressed={f.skills.includes(s)} onClick={() => toggle(s)}>{s}</button>
+      <label htmlFor="skill-in">Skills</label>
+      <input id="skill-in" maxLength={80} placeholder="Type a skill and press Enter (or use commas), e.g. Docker, GraphQL"
+        value={skillInput} onChange={(e) => setSkillInput(e.target.value)} onKeyDown={onSkillKey} onBlur={() => skillInput.trim() && addSkills(skillInput)} />
+      {f.skills.length > 0 && (
+        <div className="chips" style={{ marginTop: 10 }}>{f.skills.map((s) => (
+          <button type="button" key={s} className="chip on" aria-label={`Remove ${s}`} onClick={() => removeSkill(s)}>{s} ×</button>
+        ))}</div>
+      )}
+      <span className="note">Quick add:</span>
+      <div className="chips" style={{ marginTop: 6 }}>{SKILLS.filter((s) => !f.skills.some((x) => x.toLowerCase() === s.toLowerCase())).map((s) => (
+        <button type="button" key={s} className="chip" onClick={() => addSkills(s)}>+ {s}</button>
       ))}</div>
       <label htmlFor="gh">GitHub repository URL (optional)</label>
       <input id="gh" placeholder="https://github.com/user/repo" value={f.github} onChange={(e) => set("github", e.target.value)} />
