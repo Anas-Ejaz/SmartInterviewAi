@@ -1,0 +1,16 @@
+/* Loader shown while the backend generates the interview questions. */
+
+.loader{text-align:center;padding:40px 22px}
+.loader h2{margin-bottom:6px}
+.loader .bar{max-width:320px;margin:18px auto 14px}
+
+.orb{width:46px;height:46px;margin:0 auto 18px;border-radius:50%;background:linear-gradient(135deg,var(--purple),var(--blue));animation:orb 1.4s ease-in-out infinite}
+@keyframes orb{0%,100%{transform:scale(.85);opacity:.7}50%{transform:scale(1.08);opacity:1}}
+
+.bar.indet>i{width:40%;transition:none;animation:slide 1.3s ease-in-out infinite}
+@keyframes slide{0%{transform:translateX(-100%)}100%{transform:translateX(260%)}}
+
+@media(prefers-reduced-motion:reduce){
+  .orb{animation-duration:4s}
+  .bar.indet>i{animation-duration:4s}
+}
