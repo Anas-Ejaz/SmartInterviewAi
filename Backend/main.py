@@ -13,7 +13,7 @@ DIMS = ["technical_correctness", "reasoning", "practical_application", "problem_
 MAX_FOLLOWUPS = 2  # total follow-ups per interview
 
 app = FastAPI(title="InterviewIQ AI")
-app.add_middleware(CORSMiddleware, allow_origins=["http://localhost:5173", "http://127.0.0.1:5173", "https://smartinterviewai.vercel.app/"],
+app.add_middleware(CORSMiddleware, allow_origins=["http://localhost:5173", "http://127.0.0.1:5173", "https://smartinterviewai.vercel.app"],
                    allow_methods=["*"], allow_headers=["*"])
 SESSIONS: dict[str, dict] = {}
 
